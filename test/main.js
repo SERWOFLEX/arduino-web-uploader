@@ -126,14 +126,14 @@
                         timeout: 400,
                         baudRate: 115200
                     },
-					MEGA: {
-                        signature: n.from([30, 152, 1]),
-                        pageSize: 256,
+					proMini: {
+                        signature: n.from([30, 149, 15]),
+                        pageSize: 128,
                         timeout: 400,
                         baudRate: 115200
                     },
-                    proMini: {
-                        signature: n.from([30, 149, 15]),
+					MEGA: {
+                        signature: n.from([30, 152, 1]),
                         pageSize: 128,
                         timeout: 400,
                         baudRate: 115200
