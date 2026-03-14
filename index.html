@@ -2,60 +2,65 @@
 <html>
 
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>KRASNALE PROGRAMY TEST</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://github.com/SERWOFLEX/arduino-web-uploader/releases/download/v1.1.2/main.js"></script>
-  <script src="./stk500v2.js"></script>
+<meta charset="utf-8">
+<title>KRASNALE PROGRAMY TEST</title>
 
+<script src="https://github.com/SERWOFLEX/arduino-web-uploader/releases/download/v1.1.2/main.js"></script>
+<script src="./stk500v2.js"></script>
 
 </head>
-<center>
+
 <body>
-  <h1>
-   OPROGRAMOWANIE KRASNALE
-  </h1>
-  <button onclick="flashMega()">
- CENTRALNY NOWY2 [<span id="mega-progress"></span>]
+
+<center>
+
+<h1>OPROGRAMOWANIE KRASNALE</h1>
+
+<!-- MEGA -->
+<button type="button" onclick="flashMega()">
+CENTRALNY NOWY [<span id="mega-progress"></span>]
 </button>
 
-  <BR>
-  <BR>
-  <button arduino-uploader hex-href="./test/Blink.hex" board="nanoOldBootloader" verify>
-   KAROCA [<span class="upload-progress"></span>]
-  </button>
-   <BR>
-   <BR>
-  <button arduino-uploader hex-href="./test/Blink.hex" board="nano" verify>
-    LAMPA KOLO [<span class="upload-progress"></span>]
-  </button>
-   <BR>
-   <BR>
-  <button arduino-uploader hex-href="./test/Blink.hex" board="nanoOldBootloader" verify>
-   ZAPACHY [<span class="upload-progress"></span>]
-  </button>
-   <BR>
-   <BR>
-  <button arduino-uploader hex-href="./test/Bootloader.hex" board="nanoOldBootloader"" verify>
-   PIEC [<span class="upload-progress"></span>]
-  </button>
- <script>
+<br><br>
+
+<!-- NANO -->
+<button arduino-uploader hex-href="./test/Blink.hex" board="nanoOldBootloader" verify>
+KAROCA [<span class="upload-progress"></span>]
+</button>
+
+<br><br>
+
+<button arduino-uploader hex-href="./test/Blink.hex" board="nano" verify>
+LAMPA KOLO [<span class="upload-progress"></span>]
+</button>
+
+<br><br>
+
+<button arduino-uploader hex-href="./test/Blink.hex" board="nanoOldBootloader" verify>
+ZAPACHY [<span class="upload-progress"></span>]
+</button>
+
+<br><br>
+
+<button arduino-uploader hex-href="./test/Bootloader.hex" board="nanoOldBootloader" verify>
+PIEC [<span class="upload-progress"></span>]
+</button>
+
+</center>
+
+<script>
 
 async function flashMega()
 {
-    const r = await fetch("./test/efekt_pisania.ino.hex");
-    const text = await r.text();
+    console.log("MEGA CLICK");
 
-    const parsed = intel_hex.parse(text);
-    const hex = parsed.data;
+    const port = await navigator.serial.requestPort();
 
-    await uploadMega(hex);
+    console.log("PORT WYBRANY", port);
+
 }
 
 </script>
 
 </body>
-
 </html>
-
