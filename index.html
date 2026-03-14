@@ -59,7 +59,7 @@ window.flashMega = async function () {
 
     console.log("START MEGA");
 
-    const r = await fetch("./test/Blink.mega.hex");
+    const r = await fetch("./test/BlinkM.ino.hex");
     const text = await r.text();
 
     const hex = parseHex(text);
