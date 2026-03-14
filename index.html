@@ -59,46 +59,68 @@ window.flashMega = async function () {
     console.log("START MEGA");
 
     const port = await navigator.serial.requestPort();
-
     await port.open({ baudRate: 115200 });
-
-    console.log("PORT OPEN");
-
-    // reset Arduino
-await port.setSignals({ dataTerminalReady: false });
-await new Promise(r => setTimeout(r, 100));
-await port.setSignals({ dataTerminalReady: true });
-
-console.log("RESET SENT");
-
-// daj bootloaderowi czas
-await new Promise(r => setTimeout(r, 300));
 
     const writer = port.writable.getWriter();
     const reader = port.readable.getReader();
 
-    const msg = new Uint8Array([
-        0x1B,
-        0x01,
-        0x00,0x01,
-        0x0E,
-        0x01,
-        0x14
-    ]);
+    // reset
+    await port.setSignals({ dataTerminalReady: false });
+    await new Promise(r => setTimeout(r,100));
+    await port.setSignals({ dataTerminalReady: true });
+    await new Promise(r => setTimeout(r,300));
+
+    console.log("BOOTLOADER READY");
+
+    // SIGN_ON
+    await writer.write(new Uint8Array([0x1B,1,0,1,0x0E,1,0x14]));
+    await reader.read();
+
+    console.log("SIGN_ON OK");
+
+    // LOAD_ADDRESS 0
+    await writer.write(new Uint8Array([
+        0x1B,2,0,5,0x0E,
+        0x06,
+        0,0,0,0,
+        0x17
+    ]));
+
+    await reader.read();
+
+    console.log("ADDRESS SET");
+
+    // test data (256 bajtów)
+    const data = new Uint8Array(256).fill(0xFF);
+
+    const payload = [
+        0x13,
+        0x01,0x00,
+        0xC1,0x0A,0x40,0x4C,0x20,
+        ...data
+    ];
+
+    const size = payload.length;
+
+    const header = [
+        0x1B,3,
+        (size>>8)&255,
+        size&255,
+        0x0E
+    ];
+
+    const msg = new Uint8Array([...header,...payload,0]);
 
     await writer.write(msg);
 
-    console.log("SIGN_ON SENT");
+    await reader.read();
 
-   const result = await Promise.race([
-    reader.read(),
-    new Promise(resolve => setTimeout(() => resolve({timeout:true}), 1000))
-]);
-
-console.log("BOOTLOADER RESPONSE:", result);
+    console.log("PAGE PROGRAMMED");
 
     writer.releaseLock();
     reader.releaseLock();
+
+    await port.close();
 
 }
 
