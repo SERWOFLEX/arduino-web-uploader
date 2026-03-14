@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY[<span id="mega-progress"></span>]
+CENTRALNY NOWY DALEJ[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -163,7 +163,14 @@ window.flashMega = async function () {
 
     for (let i = 0; i < hex.length; i += pageSize) {
 
-        const page = hex.slice(i, i + pageSize);
+       let page = hex.slice(i, i + pageSize);
+
+if (page.length < pageSize)
+{
+    const tmp = new Uint8Array(pageSize).fill(0xFF);
+    tmp.set(page);
+    page = tmp;
+}
 
         await send(2,[
             0x06,
@@ -174,12 +181,11 @@ window.flashMega = async function () {
         ]);
 
         await send(3,[
-            0x13,
-            (page.length >> 8) & 255,
-            page.length & 255,
-            0xC1,0x0A,0x40,0x4C,0x20,
-            ...page
-        ]);
+    0x13,
+    0x01,0x00,
+    0xC1,0x0A,0x40,0x4C,0x20,
+    ...page
+]);
 
         address += pageSize / 2;
 
