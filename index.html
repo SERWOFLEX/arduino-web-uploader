@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY[<span id="mega-progress"></span>]
+CENTRALNY NOWY MOZE[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -161,7 +161,10 @@ window.flashMega = async function () {
     const pageSize = 256;
     let address = 0;
 
-    for (let i = 0; i < hex.length; i += pageSize) {
+    
+for (let i = 0; i < hex.length; i += pageSize) {
+
+    const wordAddress = address >> 1;
 
        let page = hex.slice(i, i + pageSize);
 
@@ -188,7 +191,7 @@ if (page.length < pageSize)
     ...page
 ]);
 
-        address += pageSize / 2;
+        address += pageSize;
 
         console.log("FLASH PAGE", i / pageSize);
     }
