@@ -18,7 +18,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY OK 2[<span id="mega-progress"></span>]
+CENTRALNY NOWY OK[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -65,11 +65,14 @@ window.flashMega = async function () {
     console.log("PORT OPEN");
 
     // reset Arduino
-    await port.setSignals({ dataTerminalReady: false });
-    await new Promise(r => setTimeout(r, 50));
-    await port.setSignals({ dataTerminalReady: true });
+await port.setSignals({ dataTerminalReady: false });
+await new Promise(r => setTimeout(r, 100));
+await port.setSignals({ dataTerminalReady: true });
 
-    console.log("RESET SENT");
+console.log("RESET SENT");
+
+// daj bootloaderowi czas
+await new Promise(r => setTimeout(r, 300));
 
     const writer = port.writable.getWriter();
     const reader = port.readable.getReader();
@@ -87,9 +90,12 @@ window.flashMega = async function () {
 
     console.log("SIGN_ON SENT");
 
-    const { value } = await reader.read();
+   const result = await Promise.race([
+    reader.read(),
+    new Promise(resolve => setTimeout(() => resolve({timeout:true}), 1000))
+]);
 
-    console.log("BOOTLOADER RESPONSE:", value);
+console.log("BOOTLOADER RESPONSE:", result);
 
     writer.releaseLock();
     reader.releaseLock();
