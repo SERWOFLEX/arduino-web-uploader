@@ -54,17 +54,17 @@ PIEC [<span class="upload-progress"></span>]
 
 <script>
 
-window.flashMega = async function ()
-{
-    console.log("MEGA START");
+window.flashMega = async function () {
 
-    const port = await navigator.serial.requestPort();
+    const r = await fetch("./test/efekt_pisania.ino.hex");
+    const text = await r.text();
 
-    await port.open({ baudRate: 115200 });
+    const parsed = intel_hex.parse(text);
+    const hex = parsed.data;
 
-    console.log("PORT OPEN");
-
+    await uploadMega(hex);
 }
+
 
 </script>
 </script>
