@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 4[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 5[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -176,13 +176,14 @@ if (page.length < pageSize)
     page = tmp;
 }
 
-        await send(2,[
+       await send(2,[
     0x06,
-    address & 255,
-    (address >> 8) & 255,
-    (address >> 16) & 255,
-    (address >> 24) & 255
+    wordAddress & 255,
+    (wordAddress >> 8) & 255,
+    (wordAddress >> 16) & 255,
+    (wordAddress >> 24) & 255
 ]);
+
 
 
        await send(3,[
