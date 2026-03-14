@@ -18,7 +18,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY OK[<span id="mega-progress"></span>]
+CENTRALNY NOWY OK DALEJ[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -64,6 +64,37 @@ window.flashMega = async function () {
     const writer = port.writable.getWriter();
     const reader = port.readable.getReader();
 
+    function checksum(buf) {
+        let cs = 0;
+        for (let b of buf) cs ^= b;
+        return cs;
+    }
+
+    async function send(seq, payload) {
+
+        const size = payload.length;
+
+        const header = [
+            0x1B,
+            seq,
+            (size >> 8) & 255,
+            size & 255,
+            0x0E
+        ];
+
+        const body = [...header, ...payload];
+
+        const cs = checksum(body);
+
+        const msg = new Uint8Array([...body, cs]);
+
+        await writer.write(msg);
+
+        const res = await reader.read();
+
+        return res.value;
+    }
+
     // reset
     await port.setSignals({ dataTerminalReady: false });
     await new Promise(r => setTimeout(r,100));
@@ -73,49 +104,29 @@ window.flashMega = async function () {
     console.log("BOOTLOADER READY");
 
     // SIGN_ON
-    await writer.write(new Uint8Array([0x1B,1,0,1,0x0E,1,0x14]));
-    await reader.read();
+    const sign = await send(1,[0x01]);
 
-    console.log("SIGN_ON OK");
+    console.log("SIGN_ON OK", sign);
 
     // LOAD_ADDRESS 0
-    await writer.write(new Uint8Array([
-        0x1B,2,0,5,0x0E,
+    const addr = await send(2,[
         0x06,
-        0,0,0,0,
-        0x17
-    ]));
+        0,0,0,0
+    ]);
 
-    await reader.read();
+    console.log("ADDRESS SET", addr);
 
-    console.log("ADDRESS SET");
-
-    // test data (256 bajtów)
+    // test data 256B
     const data = new Uint8Array(256).fill(0xFF);
 
-    const payload = [
+    const prog = await send(3,[
         0x13,
         0x01,0x00,
         0xC1,0x0A,0x40,0x4C,0x20,
         ...data
-    ];
+    ]);
 
-    const size = payload.length;
-
-    const header = [
-        0x1B,3,
-        (size>>8)&255,
-        size&255,
-        0x0E
-    ];
-
-    const msg = new Uint8Array([...header,...payload,0]);
-
-    await writer.write(msg);
-
-    await reader.read();
-
-    console.log("PAGE PROGRAMMED");
+    console.log("PAGE PROGRAMMED", prog);
 
     writer.releaseLock();
     reader.releaseLock();
