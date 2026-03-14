@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY DALEJ[<span id="mega-progress"></span>]
+CENTRALNY NOWY[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -181,10 +181,10 @@ if (page.length < pageSize)
 ]);
 
 
-        await send(3,[
+       await send(3,[
     0x13,
     0x01,0x00,
-    0xC1,0x0A,0x40,0x4C,0x20,
+    0xC1,0x0A,0x40,0x4C,0x00,
     ...page
 ]);
 
