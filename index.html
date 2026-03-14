@@ -173,12 +173,13 @@ if (page.length < pageSize)
 }
 
         await send(2,[
-            0x06,
-            (address >> 24) & 255,
-            (address >> 16) & 255,
-            (address >> 8) & 255,
-            address & 255
-        ]);
+    0x06,
+    address & 255,
+    (address >> 8) & 255,
+    (address >> 16) & 255,
+    (address >> 24) & 255
+]);
+
 
         await send(3,[
     0x13,
