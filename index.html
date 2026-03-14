@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 2[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -199,10 +199,20 @@ if (page.length < pageSize)
 
     console.log("UPLOAD COMPLETE");
 
-    writer.releaseLock();
-    reader.releaseLock();
+   // leave programming mode
+await send(4,[0x11]);
 
-    await port.close();
+console.log("LEAVE PROGMODE");
+
+// reset Arduino
+await port.setSignals({ dataTerminalReady: false });
+await new Promise(r => setTimeout(r,100));
+await port.setSignals({ dataTerminalReady: true });
+
+writer.releaseLock();
+reader.releaseLock();
+
+await port.close();
 
 }
 
