@@ -18,7 +18,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY [<span id="mega-progress"></span>]
+CENTRALNY NOWY OK [<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -62,10 +62,34 @@ window.flashMega = async function () {
 
     await port.open({ baudRate: 115200 });
 
-    console.log("PORT OPEN", port);
+    console.log("PORT OPEN");
+
+    // reset Arduino (DTR)
+    await port.setSignals({ dataTerminalReady: false });
+    await new Promise(r => setTimeout(r, 50));
+    await port.setSignals({ dataTerminalReady: true });
+
+    console.log("RESET SENT");
+
+    const writer = port.writable.getWriter();
+
+    // STK500v2 SIGN_ON
+    const msg = new Uint8Array([
+        0x1B,
+        0x01,
+        0x00,0x01,
+        0x0E,
+        0x01,
+        0x14
+    ]);
+
+    await writer.write(msg);
+
+    writer.releaseLock();
+
+    console.log("SIGN_ON SENT");
 
 }
-
 
 </script>
 </script>
