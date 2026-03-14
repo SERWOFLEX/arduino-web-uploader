@@ -91,17 +91,14 @@ async function uploadMega(hexBytes) {
 
     await port.open({ baudRate: 115200 });
 
-   console.log("PORT OPEN");
+  
 
-// reset Arduino
+
 await port.setSignals({ dataTerminalReady: false });
 await new Promise(r => setTimeout(r, 100));
 await port.setSignals({ dataTerminalReady: true });
 
-console.log("RESET SENT");
 
-// daj bootloaderowi czas
-await new Promise(r => setTimeout(r, 300));
 
     await signOn(port);
 
