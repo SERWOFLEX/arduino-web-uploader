@@ -62,8 +62,7 @@ window.flashMega = async function () {
     const r = await fetch("./test/Blink.mega.hex");
     const text = await r.text();
 
-    const parsed = intel_hex.parse(text);
-    const hex = parsed.data;
+    const hex = parseHex(text);
 
     const port = await navigator.serial.requestPort();
     await port.open({ baudRate: 115200 });
@@ -150,7 +149,38 @@ window.flashMega = async function () {
     await port.close();
 
 }
+function parseHex(hexText)
+{
+    const lines = hexText.trim().split('\n');
+    let maxAddr = 0;
+    let mem = {};
 
+    for (let line of lines)
+    {
+        if (line[0] !== ':') continue;
+
+        const len = parseInt(line.substr(1,2),16);
+        const addr = parseInt(line.substr(3,4),16);
+        const type = parseInt(line.substr(7,2),16);
+
+        if (type === 0) // data
+        {
+            for (let i=0;i<len;i++)
+            {
+                const b = parseInt(line.substr(9+i*2,2),16);
+                mem[addr+i] = b;
+                if(addr+i > maxAddr) maxAddr = addr+i;
+            }
+        }
+    }
+
+    const data = new Uint8Array(maxAddr+1).fill(0xFF);
+
+    for (let a in mem)
+        data[a] = mem[a];
+
+    return data;
+}
 </script>
 </script>
 
