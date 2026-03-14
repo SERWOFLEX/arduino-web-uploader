@@ -7,7 +7,8 @@
   <title>KRASNALE PROGRAMY TEST</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://github.com/SERWOFLEX/arduino-web-uploader/releases/download/v1.1.2/main.js"></script>
-  <script type="module" src="./stk500v2.js"></script>
+  <script src="./stk500v2.js"></script>
+
 
 </head>
 <center>
@@ -16,7 +17,7 @@
    OPROGRAMOWANIE KRASNALE
   </h1>
   <button onclick="flashMega()">
- CENTRALNY NOWY [<span id="mega-progress"></span>]
+ CENTRALNY NOWY2 [<span id="mega-progress"></span>]
 </button>
 
   <BR>
@@ -41,9 +42,7 @@
   </button>
   <script type="module">
 
-import { uploadMega } from "./stk500v2.js";
-
-window.flashMega = async function()
+async function flashMega()
 {
     const r = await fetch("./test/efekt_pisania.ino.hex");
     const text = await r.text();
@@ -52,7 +51,6 @@ window.flashMega = async function()
     const hex = parsed.data;
 
     await uploadMega(hex);
-
 }
 
 </script>
