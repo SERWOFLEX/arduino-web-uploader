@@ -49,12 +49,13 @@ export const boards = {
     timeout: 400,
     baudRate: 115200,
   } as Board,
-  MEGA: {
-    signature: Buffer.from([0x1e 0x98 0x01]),
-    pageSize: 256,
-    timeout: 1000,
-    baudRate: 57600,
-  } as Board,
+ mega2560: {
+  signature: Buffer.from([0x1e, 0x98, 0x01]),
+  pageSize: 256,
+  timeout: 2000,
+  baudRate: 115200,
+  use_8_bit_addresseses: false
+} as Board,
 }
 
 const noop = (callback: () => void) => callback()
