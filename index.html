@@ -52,7 +52,9 @@ PIEC [<span class="upload-progress"></span>]
 
 <script>
 
-async function flashMega()
+<script>
+
+window.flashMega = async function ()
 {
     console.log("MEGA START");
 
@@ -62,33 +64,9 @@ async function flashMega()
 
     console.log("PORT OPEN");
 
-    // reset Arduino
-    await port.setSignals({ dataTerminalReady: false });
-    await new Promise(r => setTimeout(r,50));
-    await port.setSignals({ dataTerminalReady: true });
-
-    console.log("RESET DONE");
-
-    const writer = port.writable.getWriter();
-
-    // SIGN_ON command STK500v2
-    const msg = new Uint8Array([
-        0x1B, // MESSAGE_START
-        0x01, // seq
-        0x00,0x01, // size
-        0x0E, // token
-        0x01, // CMD_SIGN_ON
-        0x14  // checksum
-    ]);
-
-    await writer.write(msg);
-
-    writer.releaseLock();
-
-    console.log("SIGN_ON SENT");
-
 }
 
+</script>
 </script>
 
 </script>
