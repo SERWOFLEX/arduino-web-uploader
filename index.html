@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 2[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 3[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -200,7 +200,7 @@ if (page.length < pageSize)
     console.log("UPLOAD COMPLETE");
 
    // leave programming mode
-await send(4,[0x11]);
+await send(4, [0x11, 0x01, 0x01]);
 
 console.log("LEAVE PROGMODE");
 
