@@ -54,8 +54,7 @@ export const boards = {
   pageSize: 256,
   timeout: 2000,
   baudRate: 115200,
-  use_8_bit_addresseses: false,
-} as Board,
+ } as Board,
 }
 
 const noop = (callback: () => void) => callback()
