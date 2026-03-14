@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY OK[<span id="mega-progress"></span>]
+CENTRALNY NOWY[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -50,7 +50,52 @@ PIEC [<span class="upload-progress"></span>]
 </center>
 
 <script>
+function parseHex(hexText)
+{
+    const lines = hexText.trim().split(/\r?\n/);
 
+    let upper = 0;
+    let maxAddr = 0;
+    const mem = {};
+
+    for (const line of lines)
+    {
+        if (line[0] !== ':') continue;
+
+        const len  = parseInt(line.substr(1,2),16);
+        const addr = parseInt(line.substr(3,4),16);
+        const type = parseInt(line.substr(7,2),16);
+
+        if (type === 0) // data
+        {
+            const base = upper + addr;
+
+            for (let i=0;i<len;i++)
+            {
+                const byte = parseInt(line.substr(9+i*2,2),16);
+                mem[base+i] = byte;
+                if (base+i > maxAddr) maxAddr = base+i;
+            }
+        }
+
+        else if (type === 4) // extended linear address
+        {
+            upper = parseInt(line.substr(9,4),16) << 16;
+        }
+
+        else if (type === 1) // EOF
+        {
+            break;
+        }
+    }
+
+    const data = new Uint8Array(maxAddr+1).fill(0xFF);
+
+    for (const a in mem)
+        data[a] = mem[a];
+
+    return data;
+}
 
 
 
@@ -149,38 +194,7 @@ window.flashMega = async function () {
     await port.close();
 
 }
-function parseHex(hexText)
-{
-    const lines = hexText.trim().split('\n');
-    let maxAddr = 0;
-    let mem = {};
 
-    for (let line of lines)
-    {
-        if (line[0] !== ':') continue;
-
-        const len = parseInt(line.substr(1,2),16);
-        const addr = parseInt(line.substr(3,4),16);
-        const type = parseInt(line.substr(7,2),16);
-
-        if (type === 0) // data
-        {
-            for (let i=0;i<len;i++)
-            {
-                const b = parseInt(line.substr(9+i*2,2),16);
-                mem[addr+i] = b;
-                if(addr+i > maxAddr) maxAddr = addr+i;
-            }
-        }
-    }
-
-    const data = new Uint8Array(maxAddr+1).fill(0xFF);
-
-    for (let a in mem)
-        data[a] = mem[a];
-
-    return data;
-}
 </script>
 </script>
 
