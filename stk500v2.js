@@ -85,7 +85,7 @@ async function programPage(port, data) {
     await sendCommand(port, 3, payload);
 }
 
-export async function uploadMega(hexBytes) {
+async function uploadMega {
 
     const port = await navigator.serial.requestPort();
 
@@ -111,7 +111,7 @@ export async function uploadMega(hexBytes) {
 
         address += pageSize / 2;
     }
-
+window.uploadMega = uploadMega;
     console.log("UPLOAD COMPLETE");
 
     await port.close();
