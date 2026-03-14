@@ -18,7 +18,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY [<span id="mega-progress"></span>]
+CENTRALNY NOWY2 [<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -50,15 +50,46 @@ PIEC [<span class="upload-progress"></span>]
 
 <script>
 
+<script>
+
 async function flashMega()
 {
-    console.log("MEGA CLICK");
+    console.log("MEGA START");
 
     const port = await navigator.serial.requestPort();
 
-    console.log("PORT WYBRANY", port);
+    await port.open({ baudRate: 115200 });
+
+    console.log("PORT OPEN");
+
+    // reset Arduino
+    await port.setSignals({ dataTerminalReady: false });
+    await new Promise(r => setTimeout(r,50));
+    await port.setSignals({ dataTerminalReady: true });
+
+    console.log("RESET DONE");
+
+    const writer = port.writable.getWriter();
+
+    // SIGN_ON command STK500v2
+    const msg = new Uint8Array([
+        0x1B, // MESSAGE_START
+        0x01, // seq
+        0x00,0x01, // size
+        0x0E, // token
+        0x01, // CMD_SIGN_ON
+        0x14  // checksum
+    ]);
+
+    await writer.write(msg);
+
+    writer.releaseLock();
+
+    console.log("SIGN_ON SENT");
 
 }
+
+</script>
 
 </script>
 
