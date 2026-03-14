@@ -49,7 +49,7 @@ export const boards = {
     timeout: 400,
     baudRate: 115200,
   } as Board,
- mega: {
+ MEGA: {
   signature: Buffer.from([0x1e, 0x98, 0x01]),
   pageSize: 256,
   timeout: 2000,
