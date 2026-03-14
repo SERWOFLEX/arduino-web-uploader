@@ -111,8 +111,9 @@ async function uploadMega {
 
         address += pageSize / 2;
     }
-window.uploadMega = uploadMega;
+
     console.log("UPLOAD COMPLETE");
 
     await port.close();
 }
+window.uploadMega = uploadMega;
