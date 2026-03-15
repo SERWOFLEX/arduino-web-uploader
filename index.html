@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 20[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 21[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -162,6 +162,9 @@ async function uploadAuto()
 }
     
 window.flashMega = async function (port) {
+
+let writer;
+let reader;    
 try
 {
     console.log("START MEGA");
@@ -292,9 +295,8 @@ await new Promise(r => setTimeout(r,800));
 }
 finally
 {
-
-    writer.releaseLock();
-    reader.releaseLock();
+    if(writer) writer.releaseLock();
+    if(reader) reader.releaseLock();
 
     await port.close();
 
