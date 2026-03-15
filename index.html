@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 18[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 19[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -288,10 +288,7 @@ await new Promise(r => setTimeout(r,200));
 await port.setSignals({ dataTerminalReady: true });
 await new Promise(r => setTimeout(r,800));
 
-writer.releaseLock();
-reader.releaseLock();
 
-await port.close();
 }
 finally
 {
