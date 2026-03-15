@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 11[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 12[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -164,7 +164,8 @@ async function uploadAuto()
             { usbVendorId: 0x0403 }
         ]
     });
-
+const info = port.getInfo();
+console.log(info);
     const board = await detectBootloader(port);
 
     console.log("DETECTED BOARD:", board);
