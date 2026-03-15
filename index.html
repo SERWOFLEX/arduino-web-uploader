@@ -184,8 +184,8 @@ console.log("FIRST BYTES", hex.slice(0,16));
         return cs;
     }
 
-    async function send(seq, payload) {
-
+    async function send(seq, payload)
+{
     const size = payload.length;
 
     const header = [
@@ -204,22 +204,14 @@ console.log("FIRST BYTES", hex.slice(0,16));
 
     await writer.write(msg);
 
-    let buffer = [];
+    const res = await Promise.race([
+        reader.read(),
+        new Promise((_,reject)=>setTimeout(()=>reject("timeout"),300))
+    ]);
 
-    while (true) {
+    console.log("BOOT RESP:", res.value);
 
-        const { value, done } = await reader.read();
-
-        if (done) break;
-
-        buffer.push(...value);
-
-        if (buffer.length >= 7) break; // minimalny pakiet STK500v2
-    }
-
-    console.log("BOOT RESP:", buffer);
-
-    return buffer;
+    return res.value;
 }
     // reset
     await port.setSignals({ dataTerminalReady: false });
