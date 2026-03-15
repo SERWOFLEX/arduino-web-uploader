@@ -372,6 +372,7 @@ try
     const hex = parseHex(text);
 
     await port.open({ baudRate:115200 });
+    console.log("PORT OPENED FOR NANO");
     writer = port.writable.getWriter();
     reader = port.readable.getReader();
 
