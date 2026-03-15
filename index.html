@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 39[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 40[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -153,14 +153,6 @@ async function detectBootloader(port)
 }
 async function uploadAuto()
 {
-    const ports = await navigator.serial.getPorts();
-
-    if(ports.length === 0)
-    {
-        alert("Podłącz Arduino");
-        return;
-    }
-
     const port = await navigator.serial.requestPort();
 
     try
