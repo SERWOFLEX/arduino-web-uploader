@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 21[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 22[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -295,10 +295,27 @@ await new Promise(r => setTimeout(r,800));
 }
 finally
 {
-    if(writer) writer.releaseLock();
-    if(reader) reader.releaseLock();
+    try
+    {
+        if(reader)
+        {
+            await reader.cancel();
+            reader.releaseLock();
+        }
 
-    await port.close();
+        if(writer)
+        {
+            writer.releaseLock();
+        }
+    }
+    catch(e){}
+
+    try
+    {
+        if(port.readable || port.writable)
+            await port.close();
+    }
+    catch(e){}
 
     console.log("PORT CLOSED");
 }
