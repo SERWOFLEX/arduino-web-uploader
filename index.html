@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 42[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 43[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -437,7 +437,12 @@ if(!synced)
     throw "NO NANO";
 
 console.log("NANO BOOTLOADER OK");
+await send([0x50,0x20]); // enter programming mode
+await readByte();
+await readByte();
 
+console.log("ENTER PROGRAM MODE OK");
+    
     const pageSize = 128;
     let address = 0;
 
