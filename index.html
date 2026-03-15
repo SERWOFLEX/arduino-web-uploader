@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 36[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 37[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -450,16 +450,17 @@ console.log("NANO BOOTLOADER OK");
         await readByte();
 
         // PROGRAM PAGE
-        await send([
-            0x64,
-            0x00,
-            pageSize,
-            0x46,
-            ...page,
-            0x20
-        ]);
+       await send([
+    0x64,
+    (pageSize >> 8) & 0xFF,
+    pageSize & 0xFF,
+    0x46,
+    ...page,
+    0x20
+]);
 
-        await readByte();
+       const resp = await readByte();
+if(!resp) throw "NANO WRITE ERROR";
 
         address += pageSize;
 
