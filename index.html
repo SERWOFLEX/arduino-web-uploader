@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 41[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 42[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -366,16 +366,24 @@ try
 {
     console.log("START NANO");
 
-    const r = await fetch("./test/BlinkNANO.ino.hex");
-    const text = await r.text();
-
-    const hex = parseHex(text);
+  
 
     await port.open({ baudRate:115200 });
     console.log("PORT OPENED FOR NANO");
     writer = port.writable.getWriter();
     reader = port.readable.getReader();
+  // reset Nano
+await port.setSignals({ dataTerminalReady:false });
+await new Promise(r=>setTimeout(r,100));
 
+await port.setSignals({ dataTerminalReady:true });
+await new Promise(r=>setTimeout(r,200));
+   // ważne – dajemy bootloaderowi czas
+    await new Promise(r=>setTimeout(r,50));
+     const r = await fetch("./test/BlinkNANO.ino.hex");
+    const text = await r.text();
+
+    const hex = parseHex(text);
 async function readByte()
 {
     const res = await reader.read();
@@ -388,17 +396,12 @@ async function readByte()
         await writer.write(new Uint8Array(data));
     }
 
-    // reset Nano
-await port.setSignals({ dataTerminalReady:false });
-await new Promise(r=>setTimeout(r,100));
-
-await port.setSignals({ dataTerminalReady:true });
-await new Promise(r=>setTimeout(r,200));
+  
    // sync bootloader
 
 let synced = false;
 
-for(let i=0;i<20;i++)
+for(let i=0;i<50;i++)
 {
     await send([0x30,0x20]); // GET_SYNC
 
@@ -406,7 +409,7 @@ for(let i=0;i<20;i++)
     {
         const b1 = await Promise.race([
             readByte(),
-            new Promise((_,reject)=>setTimeout(()=>reject(),100))
+            new Promise((_,reject)=>setTimeout(()=>reject(),50))
         ]);
 
         const b2 = await readByte();
@@ -418,9 +421,12 @@ for(let i=0;i<20;i++)
         }
     }
     catch(e){}
-
-    await new Promise(r=>setTimeout(r,50));
 }
+
+if(!synced)
+    throw "NO NANO";
+
+console.log("NANO BOOTLOADER OK");
 
 if(!synced)
     throw "NO NANO";
