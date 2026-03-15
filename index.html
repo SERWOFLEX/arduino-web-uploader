@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 32[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 33[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -194,8 +194,8 @@ console.log("HEX LENGTH", hex.length);
 console.log("FIRST BYTES", hex.slice(0,16));
    await port.open({ baudRate: 115200 });
 
-    const writer = port.writable.getWriter();
-    const reader = port.readable.getReader();
+    writer = port.writable.getWriter();
+reader = port.readable.getReader();
 
     function checksum(buf) {
         let cs = 0;
@@ -253,7 +253,7 @@ console.log("FIRST BYTES", hex.slice(0,16));
 
     console.log("BOOTLOADER READY");
 
-    await send(1,[0x01]);
+    await send(1,[0x01]); // SIGN_ON
 
     console.log("SIGN_ON OK");
     
