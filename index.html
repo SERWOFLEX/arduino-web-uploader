@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 44[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 45[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -356,9 +356,8 @@ finally
 
 
     
- window.flashNano = async function(port)
+window.flashNano = async function(port)
 {
-
 let writer;
 let reader;
 
@@ -366,87 +365,83 @@ try
 {
     console.log("START NANO");
 
-  
-
     await port.open({ baudRate:115200 });
     console.log("PORT OPENED FOR NANO");
+
     writer = port.writable.getWriter();
     reader = port.readable.getReader();
- 
-   // ważne – dajemy bootloaderowi czas
-    await new Promise(r=>setTimeout(r,50));
-     const r = await fetch("./test/BlinkNANO.ino.hex");
-    const text = await r.text();
 
+    const r = await fetch("./test/BlinkNANO.ino.hex");
+    const text = await r.text();
     const hex = parseHex(text);
-async function readByte()
-{
-    const res = await reader.read();
-    if(!res.value) return null;
-    return res.value[0];
-}
+
+    async function readByte()
+    {
+        const res = await reader.read();
+        if(!res.value) return null;
+        return res.value[0];
+    }
+
+    async function readOK()
+    {
+        const b1 = await readByte();
+        const b2 = await readByte();
+        if(b1 !== 0x14 || b2 !== 0x10)
+            throw "BOOTLOADER ERROR";
+    }
 
     async function send(data)
     {
         await writer.write(new Uint8Array(data));
     }
 
-  
-   // sync bootloader
-await port.setSignals({ dataTerminalReady:false });
-await new Promise(r=>setTimeout(r,50));
-await port.setSignals({ dataTerminalReady:true });
-await new Promise(r=>setTimeout(r,50));
-let synced = false;
+    // RESET (tuż przed sync)
+    await port.setSignals({ dataTerminalReady:false });
+    await new Promise(r=>setTimeout(r,50));
+    await port.setSignals({ dataTerminalReady:true });
+    await new Promise(r=>setTimeout(r,50));
 
-for(let i=0;i<50;i++)
-{
-    await send([0x30,0x20]); // GET_SYNC
+    // SYNC
+    let synced = false;
 
-    try
+    for(let i=0;i<25;i++)
     {
-        const b1 = await Promise.race([
-            readByte(),
-            new Promise((_,reject)=>setTimeout(()=>reject(),50))
-        ]);
+        await send([0x30,0x20]); // GET_SYNC
 
-        const b2 = await readByte();
-
-        if(b1 === 0x14 && b2 === 0x10)
+        try
         {
-            synced = true;
-            break;
+            const b1 = await Promise.race([
+                readByte(),
+                new Promise((_,reject)=>setTimeout(()=>reject(),100))
+            ]);
+
+            const b2 = await readByte();
+
+            if(b1 === 0x14 && b2 === 0x10)
+            {
+                synced = true;
+                break;
+            }
         }
+        catch(e){}
     }
-    catch(e){}
-}
 
-if(!synced)
-    throw "NO NANO";
+    if(!synced)
+        throw "NO NANO";
 
-console.log("NANO BOOTLOADER OK");
+    console.log("NANO BOOTLOADER OK");
 
-if(!synced)
-    throw "NO NANO";
+    // ENTER PROGRAM MODE
+    await send([0x50,0x20]);
+    await readOK();
 
-console.log("NANO BOOTLOADER OK");
+    console.log("ENTER PROGRAM MODE OK");
 
-if(!synced)
-    throw "NO NANO";
-
-console.log("NANO BOOTLOADER OK");
-await send([0x50,0x20]); // enter programming mode
-await readByte();
-await readByte();
-
-console.log("ENTER PROGRAM MODE OK");
-    
     const pageSize = 128;
     let address = 0;
 
     for(let i=0;i<hex.length;i+=pageSize)
     {
-
         let page = hex.slice(i,i+pageSize);
 
         if(page.length < pageSize)
@@ -466,28 +461,30 @@ console.log("ENTER PROGRAM MODE OK");
             0x20
         ]);
 
-        await readByte();
+        await readOK();
 
         // PROGRAM PAGE
-       await send([
-    0x64,
-    (pageSize >> 8) & 0xFF,
-    pageSize & 0xFF,
-    0x46,
-    ...page,
-    0x20
-]);
+        await send([
+            0x64,
+            (pageSize >> 8) & 0xFF,
+            pageSize & 0xFF,
+            0x46,
+            ...page,
+            0x20
+        ]);
 
-       const resp = await readByte();
-if(!resp) throw "NANO WRITE ERROR";
+        await readOK();
 
         address += pageSize;
 
         console.log("FLASH PAGE", i/pageSize);
     }
 
-    console.log("UPLOAD COMPLETE");
+    // LEAVE PROGRAM MODE
+    await send([0x51,0x20]);
+    await readOK();
 
+    console.log("UPLOAD COMPLETE");
 }
 finally
 {
@@ -498,9 +495,7 @@ finally
 
     console.log("PORT CLOSED");
 }
-
 }
-
     
 
 </script>
