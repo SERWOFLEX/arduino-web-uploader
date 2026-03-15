@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 43[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 44[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -372,12 +372,7 @@ try
     console.log("PORT OPENED FOR NANO");
     writer = port.writable.getWriter();
     reader = port.readable.getReader();
-  // reset Nano
-await port.setSignals({ dataTerminalReady:false });
-await new Promise(r=>setTimeout(r,100));
-
-await port.setSignals({ dataTerminalReady:true });
-await new Promise(r=>setTimeout(r,200));
+ 
    // ważne – dajemy bootloaderowi czas
     await new Promise(r=>setTimeout(r,50));
      const r = await fetch("./test/BlinkNANO.ino.hex");
@@ -398,7 +393,10 @@ async function readByte()
 
   
    // sync bootloader
-
+await port.setSignals({ dataTerminalReady:false });
+await new Promise(r=>setTimeout(r,50));
+await port.setSignals({ dataTerminalReady:true });
+await new Promise(r=>setTimeout(r,50));
 let synced = false;
 
 for(let i=0;i<50;i++)
