@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 40[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 41[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -376,7 +376,7 @@ try
     writer = port.writable.getWriter();
     reader = port.readable.getReader();
 
-    async function readByte()
+async function readByte()
 {
     const res = await reader.read();
     if(!res.value) return null;
@@ -404,14 +404,15 @@ for(let i=0;i<20;i++)
 
     try
     {
-        const b = await Promise.race([
+        const b1 = await Promise.race([
             readByte(),
             new Promise((_,reject)=>setTimeout(()=>reject(),100))
         ]);
 
-        if(b === 0x14) // STK_INSYNC
+        const b2 = await readByte();
+
+        if(b1 === 0x14 && b2 === 0x10)
         {
-            await readByte(); // 0x10 STK_OK
             synced = true;
             break;
         }
