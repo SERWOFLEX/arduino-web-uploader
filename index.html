@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 10[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 11[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -105,7 +105,7 @@ async function detectBootloader(port)
 {
     await port.open({ baudRate: 115200 });
 
-    // RESET Arduino
+    // reset Arduino
     await port.setSignals({ dataTerminalReady: false });
     await new Promise(r => setTimeout(r,200));
     await port.setSignals({ dataTerminalReady: true });
@@ -114,25 +114,30 @@ async function detectBootloader(port)
     const writer = port.writable.getWriter();
     const reader = port.readable.getReader();
 
-    // STK500v2 SIGN_ON
     const signOn = new Uint8Array([
         0x1B,0x01,0x00,0x01,0x0E,0x01,0x15
     ]);
 
-    await writer.write(signOn);
+    let isMega = false;
 
-    let response = null;
+    for(let i=0;i<5;i++) // kilka prób
+    {
+        await writer.write(signOn);
 
-    try
-    {
-        response = await Promise.race([
-            reader.read(),
-            new Promise((_,reject)=>setTimeout(()=>reject(),600))
-        ]);
-    }
-    catch
-    {
-        response = null;
+        try
+        {
+            const res = await Promise.race([
+                reader.read(),
+                new Promise((_,reject)=>setTimeout(()=>reject(),200))
+            ]);
+
+            if(res.value && res.value.length > 0)
+            {
+                isMega = true;
+                break;
+            }
+        }
+        catch {}
     }
 
     writer.releaseLock();
@@ -140,7 +145,7 @@ async function detectBootloader(port)
 
     await port.close();
 
-    if(response && response.value && response.value.length > 0)
+    if(isMega)
     {
         console.log("BOOTLOADER: STK500v2 (MEGA)");
         return "mega2560";
