@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 33[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 34[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -371,9 +371,7 @@ try
 
     const hex = parseHex(text);
 
-    if(!port.readable)
     await port.open({ baudRate:115200 });
-
     writer = port.writable.getWriter();
     reader = port.readable.getReader();
 
