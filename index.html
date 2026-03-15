@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 15[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 16[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -172,7 +172,8 @@ async function uploadAuto()
 }
     
 window.flashMega = async function (port) {
-
+try
+{
     console.log("START MEGA");
 
     const r = await fetch("./test/BlinkM.ino.hex");
@@ -301,8 +302,22 @@ writer.releaseLock();
 reader.releaseLock();
 
 await port.close();
-
 }
+finally
+{
+
+    writer.releaseLock();
+    reader.releaseLock();
+
+    await port.close();
+
+    console.log("PORT CLOSED");
+}
+}
+
+
+
+    
 window.flashNano = async function(port)
 {
     await port.open({ baudRate:115200 });
