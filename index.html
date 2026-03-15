@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 48[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 49[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -253,7 +253,10 @@ reader = port.readable.getReader();
 
     console.log("BOOTLOADER READY");
 
-    await send(1,[0x01]); // SIGN_ON
+    const resp = await send(1,[0x01]); // SIGN_ON
+
+if(!resp || resp.length < 7)
+    throw "NOT MEGA";
 
     console.log("SIGN_ON OK");
     
