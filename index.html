@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 24[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 25[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -186,7 +186,7 @@ console.log("FIRST BYTES", hex.slice(0,16));
         return cs;
     }
 
-    async function send(seq, payload)
+   async function send(seq, payload)
 {
     const size = payload.length;
 
@@ -206,14 +206,27 @@ console.log("FIRST BYTES", hex.slice(0,16));
 
     await writer.write(msg);
 
-    const res = await Promise.race([
-        reader.read(),
-        new Promise((_,reject)=>setTimeout(()=>reject("timeout"),300))
-    ]);
+    let buffer = [];
 
-    console.log("BOOT RESP:", res.value);
+    while(true)
+    {
+        const res = await Promise.race([
+            reader.read(),
+            new Promise((_,reject)=>setTimeout(()=>reject("timeout"),1000))
+        ]);
 
-    return res.value;
+        if(!res.value)
+            break;
+
+        buffer.push(...res.value);
+
+        if(buffer.length >= 7)
+            break;
+    }
+
+    console.log("BOOT RESP:", buffer);
+
+    return buffer;
 }
     // reset
     await port.setSignals({ dataTerminalReady: false });
@@ -284,7 +297,8 @@ if (page.length < pageSize)
 await send(4, [0x11, 0x01, 0x01]);
 
 console.log("LEAVE PROGMODE");
-
+reader.releaseLock();
+writer.releaseLock();
 // reset Arduino
 await port.setSignals({ dataTerminalReady: false });
 await new Promise(r => setTimeout(r,200));
@@ -297,14 +311,6 @@ finally
 {
     try
     {
-        if(reader)
-            reader.releaseLock();
-
-        if(writer)
-            writer.releaseLock();
-
-        await new Promise(r => setTimeout(r,100));
-
         await port.close();
     }
     catch(e)
