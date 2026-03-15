@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 5[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 6[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -124,29 +124,30 @@ console.log("FIRST BYTES", hex.slice(0,16));
 
     async function send(seq, payload) {
 
-        const size = payload.length;
+    const size = payload.length;
 
-        const header = [
-            0x1B,
-            seq,
-            (size >> 8) & 255,
-            size & 255,
-            0x0E
-        ];
+    const header = [
+        0x1B,
+        seq,
+        (size >> 8) & 255,
+        size & 255,
+        0x0E
+    ];
 
-        const body = [...header, ...payload];
+    const body = [...header, ...payload];
 
-        const cs = checksum(body);
+    const cs = checksum(body);
 
-        const msg = new Uint8Array([...body, cs]);
+    const msg = new Uint8Array([...body, cs]);
 
-        await writer.write(msg);
+    await writer.write(msg);
 
-        const res = await reader.read();
+    const res = await reader.read();
 
-        return res.value;
-    }
+    console.log("BOOT RESP:", res.value);
 
+    return res.value;
+}
     // reset
     await port.setSignals({ dataTerminalReady: false });
     await new Promise(r => setTimeout(r,100));
@@ -158,7 +159,12 @@ console.log("FIRST BYTES", hex.slice(0,16));
     await send(1,[0x01]);
 
     console.log("SIGN_ON OK");
+    
+await send(2,[0x12]);
+console.log("CHIP ERASE");
+await new Promise(r=>setTimeout(r,200));
 
+    
     const pageSize = 256;
     let address = 0;
 
@@ -178,18 +184,25 @@ if (page.length < pageSize)
 
        await send(2,[
     0x06,
-    wordAddress & 255,
-    (wordAddress >> 8) & 255,
+    (wordAddress >> 24) & 255,
     (wordAddress >> 16) & 255,
-    (wordAddress >> 24) & 255
+    (wordAddress >> 8) & 255,
+    wordAddress & 255
 ]);
 
 
 
        await send(3,[
     0x13,
-    0x00,0x80,
-    0xC1,0x0A,0x40,0x4C,0x20,
+    (page.length >> 8) & 255,
+    page.length & 255,
+    0xC1,
+    0x0A,
+    0x40,
+    0x4C,
+    0x20,
+    0x00,
+    0x00,
     ...page
 ]);
         address += pageSize;
