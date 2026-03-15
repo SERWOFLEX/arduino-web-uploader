@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 7[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 8[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -54,13 +54,7 @@ PIEC [<span class="upload-progress"></span>]
 </center>
 
 <script>
-    const port = await navigator.serial.requestPort({
-filters: [
-{ usbVendorId: 0x2341 },
-{ usbVendorId: 0x1A86 },
-{ usbVendorId: 0x0403 }
-]
-});
+  
 function parseHex(hexText)
 {
     const lines = hexText.trim().split(/\r?\n/);
@@ -132,7 +126,13 @@ function detectBoard(info)
 async function uploadAuto()
 {
 
-    const port = await navigator.serial.requestPort();
+    const port = await navigator.serial.requestPort({
+        filters: [
+            { usbVendorId: 0x2341 },
+            { usbVendorId: 0x1A86 },
+            { usbVendorId: 0x0403 }
+        ]
+    });
 
     const info = port.getInfo();
 
@@ -141,17 +141,16 @@ async function uploadAuto()
     console.log("DETECTED:", board);
 
     if(board === "mega2560")
-        await flashMega(port);
+        await flashMega();
 
     if(board === "uno")
-        await flashUno(port);
+        await flashUno();
 
     if(board === "nano")
-        await flashUno(port);
+        await flashUno();
 
     if(board === "unknown")
         alert("Nieznana płytka");
-
 }
 window.flashMega = async function () {
 
