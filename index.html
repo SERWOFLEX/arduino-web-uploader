@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 12[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 13[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -105,53 +105,43 @@ async function detectBootloader(port)
 {
     await port.open({ baudRate: 115200 });
 
-    // reset Arduino
+    // reset
     await port.setSignals({ dataTerminalReady: false });
     await new Promise(r => setTimeout(r,200));
     await port.setSignals({ dataTerminalReady: true });
-    await new Promise(r => setTimeout(r,500));
+    await new Promise(r => setTimeout(r,400));
 
     const writer = port.writable.getWriter();
     const reader = port.readable.getReader();
 
-    const signOn = new Uint8Array([
-        0x1B,0x01,0x00,0x01,0x0E,0x01,0x15
+    // STK500v2 GET_PARAMETER
+    const cmd = new Uint8Array([
+        0x1B,0x01,0x00,0x02,0x0E,
+        0x03, // GET_PARAMETER
+        0x91,
+        0x95
     ]);
 
-    let isMega = false;
+    await writer.write(cmd);
 
-    for(let i=0;i<5;i++) // kilka prób
+    let res = null;
+
+    try
     {
-        await writer.write(signOn);
-
-        try
-        {
-            const res = await Promise.race([
-                reader.read(),
-                new Promise((_,reject)=>setTimeout(()=>reject(),200))
-            ]);
-
-            if(res.value && res.value.length > 0)
-            {
-                isMega = true;
-                break;
-            }
-        }
-        catch {}
+        res = await Promise.race([
+            reader.read(),
+            new Promise((_,reject)=>setTimeout(()=>reject(),400))
+        ]);
     }
+    catch {}
 
     writer.releaseLock();
     reader.releaseLock();
-
     await port.close();
 
-    if(isMega)
-    {
-        console.log("BOOTLOADER: STK500v2 (MEGA)");
+    if(res && res.value && res.value.length > 0)
         return "mega2560";
-    }
 
-    console.log("BOOTLOADER: STK500v1 (UNO/NANO)");
     return "uno";
 }
 async function uploadAuto()
