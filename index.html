@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 46[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 47[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -375,16 +375,20 @@ try
     reader = port.readable.getReader();
 
     async function readOK()
-    {
-        const r1 = await reader.read();
-        if(!r1.value) throw "NO RESPONSE";
+{
+    const res = await reader.read();
 
-        if(r1.value[0] !== 0x14) throw "NO INSYNC";
+    if(!res.value)
+        throw "NO RESPONSE";
 
-        const r2 = await reader.read();
-        if(!r2.value || r2.value[0] !== 0x10)
-            throw "NO OK";
-    }
+    const buf = res.value;
+
+    if(buf.length < 2)
+        throw "SHORT RESPONSE";
+
+    if(buf[0] !== 0x14 || buf[1] !== 0x10)
+        throw "BOOTLOADER ERROR";
+}
 
     async function send(data)
     {
