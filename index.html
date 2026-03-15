@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 13[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 14[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -146,28 +146,24 @@ async function detectBootloader(port)
 }
 async function uploadAuto()
 {
+    const port = await navigator.serial.requestPort();
 
-    const port = await navigator.serial.requestPort({
-        filters: [
-            { usbVendorId: 0x2341 },
-            { usbVendorId: 0x1A86 },
-            { usbVendorId: 0x0403 }
-        ]
-    });
-const info = port.getInfo();
-console.log(info);
-    const board = await detectBootloader(port);
+    try
+    {
+        await flashMega(port);
+        console.log("DETECTED BOARD: mega2560");
+        return;
+    }
+    catch(e)
+    {
+        console.log("NOT MEGA");
+    }
 
-    console.log("DETECTED BOARD:", board);
-
-    if(board === "mega2560")
-        await flashMega();
-
-    if(board === "uno")
-        alert("UNO/NANO uploader jeszcze nie dodany");
-
+    alert("UNO/NANO uploader jeszcze nie dodany");
 }
-window.flashMega = async function () {
+
+    
+window.flashMega = async function (port) {
 
     console.log("START MEGA");
 
@@ -177,8 +173,7 @@ window.flashMega = async function () {
     const hex = parseHex(text);
 console.log("HEX LENGTH", hex.length);
 console.log("FIRST BYTES", hex.slice(0,16));
-    const port = await navigator.serial.requestPort();
-    await port.open({ baudRate: 115200 });
+   await port.open({ baudRate: 115200 });
 
     const writer = port.writable.getWriter();
     const reader = port.readable.getReader();
