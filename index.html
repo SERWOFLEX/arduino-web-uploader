@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 29[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 30[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -328,7 +328,20 @@ finally
 {
     try
     {
-        await port.close();
+        if(reader)
+        {
+            try { reader.releaseLock(); } catch(e){}
+        }
+
+        if(writer)
+        {
+            try { writer.releaseLock(); } catch(e){}
+        }
+
+        await new Promise(r=>setTimeout(r,100));
+
+        if(port.readable || port.writable)
+            await port.close();
     }
     catch(e)
     {
