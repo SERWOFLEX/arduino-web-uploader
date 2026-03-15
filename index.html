@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 8[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 9[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -101,26 +101,47 @@ function parseHex(hexText)
 
     return data;
 }
-
-function detectBoard(info)
+async function detectBootloader(port)
 {
+    await port.open({ baudRate: 115200 });
 
-    const vid = info.usbVendorId;
-    const pid = info.usbProductId;
+    const writer = port.writable.getWriter();
+    const reader = port.readable.getReader();
 
-    if(vid === 0x2341 && pid === 0x0010)
+    // próbujemy STK500v2 (Mega)
+    const signOn = new Uint8Array([
+        0x1B,0x01,0x00,0x01,0x0E,0x01,0x15
+    ]);
+
+    await writer.write(signOn);
+
+    let result;
+
+    try
+    {
+        result = await Promise.race([
+            reader.read(),
+            new Promise((_,reject)=>setTimeout(()=>reject("timeout"),500))
+        ]);
+    }
+    catch
+    {
+        result = null;
+    }
+
+    writer.releaseLock();
+    reader.releaseLock();
+
+    await port.close();
+
+    if(result && result.value && result.value.length > 0)
+    {
+        console.log("BOOTLOADER: STK500v2 (MEGA)");
         return "mega2560";
+    }
 
-    if(vid === 0x2341 && pid === 0x0043)
-        return "uno";
-
-    if(vid === 0x1A86 && pid === 0x7523)
-        return "nano";
-
-    if(vid === 0x0403 && pid === 0x6001)
-        return "nano";
-
-    return "unknown";
+    console.log("BOOTLOADER: STK500v1 (UNO/NANO)");
+    return "uno";
 }
 
 async function uploadAuto()
@@ -134,23 +155,16 @@ async function uploadAuto()
         ]
     });
 
-    const info = port.getInfo();
+    const board = await detectBootloader(port);
 
-    const board = detectBoard(info);
-
-    console.log("DETECTED:", board);
+    console.log("DETECTED BOARD:", board);
 
     if(board === "mega2560")
         await flashMega();
 
     if(board === "uno")
-        await flashUno();
+        alert("UNO/NANO uploader jeszcze nie dodany");
 
-    if(board === "nano")
-        await flashUno();
-
-    if(board === "unknown")
-        alert("Nieznana płytka");
 }
 window.flashMega = async function () {
 
