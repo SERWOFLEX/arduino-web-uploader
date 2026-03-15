@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 25[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 26[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -152,11 +152,21 @@ async function uploadAuto()
     {
         await flashMega(port);
         console.log("MEGA OK");
-        return; // koniec, nic więcej nie rób
+        return;
     }
     catch(e)
     {
-        console.log("FLASH MEGA ERROR:", e);
+        console.log("NOT MEGA");
+    }
+
+    try
+    {
+        await flashNano(port);
+        console.log("NANO OK");
+        return;
+    }
+    catch(e)
+    {
         alert("Zła płytka lub Nano ze starym bootloaderem");
     }
 }
@@ -322,6 +332,66 @@ finally
 }
 }
 
+
+    window.flashNano = async function(port)
+{
+
+let writer;
+let reader;
+
+try
+{
+    console.log("START NANO");
+
+    const r = await fetch("./test/Blink.hex");
+    const text = await r.text();
+
+    const hex = parseHex(text);
+
+    await port.open({ baudRate:115200 });
+
+    writer = port.writable.getWriter();
+    reader = port.readable.getReader();
+
+    // reset
+    await port.setSignals({ dataTerminalReady:false });
+    await new Promise(r=>setTimeout(r,100));
+    await port.setSignals({ dataTerminalReady:true });
+    await new Promise(r=>setTimeout(r,300));
+
+    async function readByte()
+    {
+        const res = await reader.read();
+        return res.value;
+    }
+
+    async function send(data)
+    {
+        await writer.write(new Uint8Array(data));
+    }
+
+    // sync bootloader
+    await send([0x30,0x20]);
+
+    const res = await readByte();
+
+    if(!res)
+        throw "NO NANO";
+
+    console.log("NANO BOOTLOADER OK");
+
+}
+finally
+{
+    if(reader) reader.releaseLock();
+    if(writer) writer.releaseLock();
+
+    await port.close();
+
+    console.log("PORT CLOSED");
+}
+
+}
 
 
     
