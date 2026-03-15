@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 45[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 46[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -356,8 +356,8 @@ finally
 
 
     
-window.flashNano = async function(port)
-{
+window.flashNano = async function (port) {
+
 let writer;
 let reader;
 
@@ -365,29 +365,25 @@ try
 {
     console.log("START NANO");
 
-    await port.open({ baudRate:115200 });
-    console.log("PORT OPENED FOR NANO");
-
-    writer = port.writable.getWriter();
-    reader = port.readable.getReader();
-
     const r = await fetch("./test/BlinkNANO.ino.hex");
     const text = await r.text();
     const hex = parseHex(text);
 
-    async function readByte()
-    {
-        const res = await reader.read();
-        if(!res.value) return null;
-        return res.value[0];
-    }
+    await port.open({ baudRate:115200 });
+
+    writer = port.writable.getWriter();
+    reader = port.readable.getReader();
 
     async function readOK()
     {
-        const b1 = await readByte();
-        const b2 = await readByte();
-        if(b1 !== 0x14 || b2 !== 0x10)
-            throw "BOOTLOADER ERROR";
+        const r1 = await reader.read();
+        if(!r1.value) throw "NO RESPONSE";
+
+        if(r1.value[0] !== 0x14) throw "NO INSYNC";
+
+        const r2 = await reader.read();
+        if(!r2.value || r2.value[0] !== 0x10)
+            throw "NO OK";
     }
 
     async function send(data)
@@ -395,33 +391,26 @@ try
         await writer.write(new Uint8Array(data));
     }
 
-    // RESET (tuż przed sync)
+    // reset
     await port.setSignals({ dataTerminalReady:false });
-    await new Promise(r=>setTimeout(r,50));
+    await new Promise(r=>setTimeout(r,100));
     await port.setSignals({ dataTerminalReady:true });
-    await new Promise(r=>setTimeout(r,50));
+    await new Promise(r=>setTimeout(r,100));
 
-    // SYNC
-    let synced = false;
+    console.log("BOOTLOADER READY");
 
-    for(let i=0;i<25;i++)
+    // sync
+    let synced=false;
+
+    for(let i=0;i<20;i++)
     {
         await send([0x30,0x20]); // GET_SYNC
 
         try
         {
-            const b1 = await Promise.race([
-                readByte(),
-                new Promise((_,reject)=>setTimeout(()=>reject(),100))
-            ]);
-
-            const b2 = await readByte();
-
-            if(b1 === 0x14 && b2 === 0x10)
-            {
-                synced = true;
-                break;
-            }
+            await readOK();
+            synced=true;
+            break;
         }
         catch(e){}
     }
@@ -429,9 +418,9 @@ try
     if(!synced)
         throw "NO NANO";
 
-    console.log("NANO BOOTLOADER OK");
+    console.log("SYNC OK");
 
-    // ENTER PROGRAM MODE
+    // enter program mode
     await send([0x50,0x20]);
     await readOK();
 
@@ -453,7 +442,7 @@ try
 
         const wordAddress = address >> 1;
 
-        // LOAD ADDRESS
+        // load address
         await send([
             0x55,
             wordAddress & 0xFF,
@@ -463,11 +452,11 @@ try
 
         await readOK();
 
-        // PROGRAM PAGE
+        // program page
         await send([
             0x64,
-            (pageSize >> 8) & 0xFF,
-            pageSize & 0xFF,
+            0x00,
+            pageSize,
             0x46,
             ...page,
             0x20
@@ -475,23 +464,30 @@ try
 
         await readOK();
 
-        address += pageSize;
-
         console.log("FLASH PAGE", i/pageSize);
+
+        address += pageSize;
     }
 
-    // LEAVE PROGRAM MODE
+    console.log("UPLOAD COMPLETE");
+
+    // leave program mode
     await send([0x51,0x20]);
     await readOK();
 
-    console.log("UPLOAD COMPLETE");
+    console.log("LEAVE PROGMODE");
+
 }
 finally
 {
-    if(reader) reader.releaseLock();
-    if(writer) writer.releaseLock();
+    try
+    {
+        if(reader) reader.releaseLock();
+        if(writer) writer.releaseLock();
 
-    await port.close();
+        await port.close();
+    }
+    catch(e){}
 
     console.log("PORT CLOSED");
 }
