@@ -30,7 +30,7 @@ Połącz Arduino i wgraj firmware NANO
     
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 34[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 35[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -389,28 +389,24 @@ try
 
     // reset Nano
 await port.setSignals({ dataTerminalReady:false });
-await new Promise(r=>setTimeout(r,200));
+await new Promise(r=>setTimeout(r,100));
 
 await port.setSignals({ dataTerminalReady:true });
-await new Promise(r=>setTimeout(r,500));
+await new Promise(r=>setTimeout(r,200));
    // sync bootloader
+let synced = false;
+
 let synced = false;
 
 for(let i=0;i<10;i++)
 {
-    await port.setSignals({ dataTerminalReady:false });
-    await new Promise(r=>setTimeout(r,100));
-
-    await port.setSignals({ dataTerminalReady:true });
-    await new Promise(r=>setTimeout(r,200));
-
     await send([0x30,0x20]);
 
     try
     {
         const res = await Promise.race([
             reader.read(),
-            new Promise((_,reject)=>setTimeout(()=>reject(),200))
+            new Promise((_,reject)=>setTimeout(()=>reject(),100))
         ]);
 
         if(res.value)
@@ -420,8 +416,6 @@ for(let i=0;i<10;i++)
         }
     }
     catch(e){}
-
-    await new Promise(r=>setTimeout(r,50));
 }
 
 if(!synced)
