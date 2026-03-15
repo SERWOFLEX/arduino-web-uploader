@@ -19,7 +19,7 @@
 
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 6[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 7[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -142,11 +142,22 @@ console.log("FIRST BYTES", hex.slice(0,16));
 
     await writer.write(msg);
 
-    const res = await reader.read();
+    let buffer = [];
 
-    console.log("BOOT RESP:", res.value);
+    while (true) {
 
-    return res.value;
+        const { value, done } = await reader.read();
+
+        if (done) break;
+
+        buffer.push(...value);
+
+        if (buffer.length >= 7) break; // minimalny pakiet STK500v2
+    }
+
+    console.log("BOOT RESP:", buffer);
+
+    return buffer;
 }
     // reset
     await port.setSignals({ dataTerminalReady: false });
@@ -208,6 +219,7 @@ if (page.length < pageSize)
         address += pageSize;
 
         console.log("FLASH PAGE", i / pageSize);
+    await new Promise(r => setTimeout(r,5));
     }
 
     console.log("UPLOAD COMPLETE");
@@ -219,8 +231,9 @@ console.log("LEAVE PROGMODE");
 
 // reset Arduino
 await port.setSignals({ dataTerminalReady: false });
-await new Promise(r => setTimeout(r,100));
+await new Promise(r => setTimeout(r,200));
 await port.setSignals({ dataTerminalReady: true });
+await new Promise(r => setTimeout(r,800));
 
 writer.releaseLock();
 reader.releaseLock();
