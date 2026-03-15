@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 19[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 20[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -305,31 +305,7 @@ finally
 
 
     
-window.flashNano = async function(port)
-{
-    await port.open({ baudRate:115200 });
 
-    const writer = port.writable.getWriter();
-    const reader = port.readable.getReader();
-
-    // GET_SYNC
-    await writer.write(new Uint8Array([0x30,0x20]));
-
-    const res = await Promise.race([
-        reader.read(),
-        new Promise((_,reject)=>setTimeout(()=>reject("timeout"),300))
-    ]);
-
-    if(!res.value || res.value.length < 2)
-        throw "not nano";
-
-    console.log("NANO BOOTLOADER OK");
-
-    writer.releaseLock();
-    reader.releaseLock();
-
-    await port.close();
-}
 </script>
 </script>
 
