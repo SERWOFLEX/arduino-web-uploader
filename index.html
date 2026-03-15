@@ -23,7 +23,7 @@ Połącz Arduino i wgraj firmware
     <br><br>
 <!-- MEGA -->
 <button type="button" onclick="flashMega()">
-CENTRALNY NOWY TEST 17[<span id="mega-progress"></span>]
+CENTRALNY NOWY TEST 18[<span id="mega-progress"></span>]
 </button>
 
 <br><br>
@@ -152,14 +152,13 @@ async function uploadAuto()
     {
         await flashMega(port);
         console.log("MEGA OK");
-        return;
+        return; // koniec, nic więcej nie rób
     }
     catch(e)
     {
         console.log("FLASH MEGA ERROR:", e);
+        alert("Zła płytka lub Nano ze starym bootloaderem");
     }
-
-    alert("Zła płytka lub Nano ze starym bootloaderem");
 }
     
 window.flashMega = async function (port) {
